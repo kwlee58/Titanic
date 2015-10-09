@@ -1,0 +1,144 @@
+---
+title: "Titanic"
+author: "coop711"
+date: "2015년 4월 13일"
+output: html_document
+---
+
+Titanic Data Analysis
+---------------------
+
+Main Question : Are women and children saved first?
+
+Data
+----
+
+`datasets` 패키지에 들어있으므로 불러들이기만 하면 됨. 자료의 구조 파악.
+
+
+```{r}
+data(Titanic)
+str(Titanic)
+Titanic
+```
+
+4-dimensional array table이므로 보기 쉽게 `ftable`(flat table) 적용.
+
+```{r}
+ftable(Titanic)
+```
+
+4-dimensional array 인 점을 감안하여 각 변수의 주변합을 구해보면
+
+```{r}
+apply(Titanic, 1, sum)
+apply(Titanic, 2, sum)
+apply(Titanic, 3, sum)
+apply(Titanic, 4, sum)
+```
+
+Crosstable 을 구하되 상황 파악이 편하게 열과 행을 조정.
+
+```{r}
+apply(Titanic, 1:2, sum)
+apply(Titanic, 2:1, sum)
+apply(Titanic, c(3,1), sum)
+apply(Titanic, c(4,1), sum)
+```
+
+등급별 생존률을 비교하려면. (우선, 자릿수를 정해 놓고)
+
+```{r}
+options(digits=2)
+prop.table(apply(Titanic, c(4,1), sum), margin=2)
+```
+
+이를 barplot으로 나타내는 데 있어서 각 `argument`가 왜  필요한지 시행착오를 겪어 볼 것.
+
+```{r}
+barplot(prop.table(apply(Titanic, c(4,1), sum), margin=2), legend.text=T, args.legend=list(x="topleft", inset=0.05))
+```
+
+Cross-table 을 계속 작성해 가자면 
+
+```{r}
+apply(Titanic, 2:3, sum)
+apply(Titanic, c(2,4), sum)
+apply(Titanic, c(4,2), sum)
+```
+
+남녀 생존률을 비교하려면,
+
+```{r}
+prop.table(apply(Titanic, c(4,2), sum), margin=2)
+barplot(prop.table(apply(Titanic, c(4,2), sum), margin=2), legend.text=T, args.legend=list(x="topright", inset=0.05))
+```
+
+남은 cross-table 은 
+
+```{r}
+apply(Titanic, 4:3, sum)
+```
+
+성인과 어린이의 생존률을 비교하려면 
+
+```{r}
+prop.table(apply(Titanic, 4:3, sum), margin=2)
+barplot(prop.table(apply(Titanic, c(4,3), sum), margin=2), legend.text=T, args.legend=list(x="topleft", inset=0.05))
+```
+
+객실 등급별로 어린이들과 어른들의 생존률을 비교하려면
+
+```{r}
+apply(Titanic, c(3, 4, 1), sum)
+ftable(apply(Titanic, c(3, 4, 1), sum))
+child.by.class<-prop.table(ftable(apply(Titanic, c(3, 4, 1), sum))[1:2,], margin=2)
+adult.by.class<-prop.table(ftable(apply(Titanic, c(3, 4, 1), sum))[3:4,], margin=2)
+child.adult.by.class<-rbind(child.by.class, adult.by.class)
+dimnames(child.adult.by.class)<-list(c("child.no", "child.yes", "adult.no", "adult.yes"), dimnames(Titanic)[[1]])
+child.adult.by.class
+```
+
+한꺼번에 살펴보려면 
+
+```{r fig.width=8, fig.height=8}
+mosaicplot(Titanic)
+```
+
+컬러로 구분하려면 
+
+```{r fig.width=8, fig.height=8}
+mosaicplot(Titanic, col=rainbow(2))
+```
+
+이 자료를 보다 익숙한 data frame 으로 작업하려면 `as.data.frame()`을 이용하여 
+
+```{r}
+Titanic.df<-as.data.frame(Titanic)
+str(Titanic.df)
+```
+
+Survived factor의 `"Yes"`, `"No"` level을 바꾸려면
+
+```{r}
+Titanic.df$Survived<-factor(Titanic.df$Survived, levels=c("Yes", "No"))
+str(Titanic.df)
+```
+
+이제는 `xtabs()` 등의 익숙한 함수를 이용할 수 있음.
+
+```{r}
+xtabs(Freq~Survived, data=Titanic.df)
+addmargins(xtabs(Freq~Survived, data=Titanic.df))
+xtabs(Freq~Survived+Class, data=Titanic.df)
+addmargins(xtabs(Freq~Survived+Class, data=Titanic.df))
+xtabs(Freq~Survived+Sex, data=Titanic.df)
+addmargins(xtabs(Freq~Survived+Sex, data=Titanic.df))
+xtabs(Freq~Survived+Age, data=Titanic.df)
+addmargins(xtabs(Freq~Survived+Age, data=Titanic.df))
+ftable(xtabs(Freq~Age+Survived+Class, data=Titanic.df))
+```
+
+```{r}
+mosaicplot(Titanic.df)
+```
