@@ -1,0 +1,53 @@
+---
+title: "Titanic"
+author: "coop711"
+date: "2015년 4월 13일"
+output: html_document
+---
+
+Titanic Data Analysis
+---------------------
+
+Main Question : Are women and children saved first?
+
+Data
+----
+
+datasets 패키지에 들어있으므로 불러들이기만 하면 됨. 자료의 구조 파악.
+
+
+```{r}
+data(Titanic)
+str(Titanic)
+Titanic
+```
+
+4-dimensional array table이므로 보기 쉽게 ftable(flat table) 적용.
+
+```{r}
+ftable(Titanic)
+```
+
+4-dimensional array 인 점을 감안하여 각 변수의 주변합을 구해보면
+
+```{r}
+apply(Titanic, 1, sum)
+apply(Titanic, 2, sum)
+apply(Titanic, 3, sum)
+apply(Titanic, 4, sum)
+apply(Titanic, 1:2, sum)
+apply(Titanic, 2:1, sum)
+apply(Titanic, c(3,1), sum)
+apply(Titanic, c(4,1), sum)
+```
+
+등급별 생존률을 비교하려면. (우선, 자릿수를 정해 놓고)
+
+```{r}
+options(digits=2)
+prop.table(apply(Titanic, c(4,1), sum), margin=2)
+```
+
+이를 barplot으로 나타내는 게 각 argument가 왜  필요한지 시행착오를 겪어 볼 것.
+
+```
